@@ -74,9 +74,9 @@ async def which(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Trying username {username}...")
 
 @app.route(f'/{TOKEN}', methods=['POST'])
-async def webhook():
+def webhook():
     update = Update.de_json(request.get_json(force=True), application.bot)
-    await application.process_update(update)
+    application.process_update(update)
     return "OK", 200
 
 def main():
