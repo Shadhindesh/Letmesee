@@ -73,12 +73,15 @@ async def which(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"Received /which command from {update.effective_user.username}")
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Trying username {username}...")
 
-@app.route(f'/{TOKEN}', methods=['POST'])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), application.bot)
-    application.process_update(update)
-    return "OK", 200
 
+@app.route(f'/{TOKEN}', methods=['GET', 'POST'])
+def webhook():
+    if request.method == 'POST':
+        update = Update.de_json(request.get_json(force=True), application.bot)
+        application.process_update(update)
+        return "OK", 200
+    else:
+        return "Invalid request method", 405
 def main():
     global application
     application = ApplicationBuilder().token(TOKEN).build()
