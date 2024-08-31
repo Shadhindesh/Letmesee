@@ -25,7 +25,7 @@ url = base_url + "/login.php"
 password = "12345678"
 
 # Initialize the username counter
-username = 100233
+username = 100365
 
 # Create the Telegram Application
 application = ApplicationBuilder().token(TOKEN).build()
@@ -108,7 +108,6 @@ async def main() -> None:
     async with application:
         await application.start()
         await webserver.serve()
-        await application.stop()
 
 if __name__ == '__main__':
     asyncio.run(main())
