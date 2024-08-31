@@ -80,6 +80,8 @@ def webhook():
         update = Update.de_json(request.get_json(force=True), application.bot)
         application.process_update(update)
         return "OK", 200
+    elif request.method == 'GET':
+        return "Webhook is set!", 200
     else:
         return "Invalid request method", 405
 def main():
