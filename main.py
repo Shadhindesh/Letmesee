@@ -11,7 +11,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # Initialize Flask app and SQLAlchemy
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///attempts.db'  # SQLite database
+# Update the URI to point to your PostgreSQL database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://letmesee_user:cstlcNuBuSd1ehLbp8HpkL8r4V2CrrvW@dpg-cr9vq6qj1k6c73bn53gg-a.oregon-postgres.render.com/letmesee'
 db = SQLAlchemy(app)
 
 # Define Attempt model
@@ -99,4 +100,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-          
