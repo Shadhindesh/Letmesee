@@ -1,10 +1,10 @@
 import requests
-
 from bs4 import BeautifulSoup
 import logging
 import asyncio
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # Import CORS
 import threading
 
 # Enable logging
@@ -12,9 +12,11 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # Initialize Flask app and SQLAlchemy
 app = Flask(__name__)
-# Update the URI to point to your PostgreSQL database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://letmesee_user:cstlcNuBuSd1ehLbp8HpkL8r4V2CrrvW@dpg-cr9vq6qj1k6c73bn53gg-a.oregon-postgres.render.com/letmesee'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://letmesee_user:cstlcNuBuSd1ehLbp8HpkL8r4V2CrrvW@dpg-cr9vq6qj1k6c73bn53gg-a.oregon-postgres.render.com/letmesee'# SQLite database
 db = SQLAlchemy(app)
+
+# Enable CORS
+CORS(app)  # This will allow all origins by default
 
 # Define Attempt model
 class Attempt(db.Model):
@@ -39,7 +41,7 @@ def load_last_id():
         last_attempt = Attempt.query.order_by(Attempt.id.desc()).first()
         if last_attempt:
             return last_attempt.username + 1
-        return 100000 # Default starting ID if no records exist
+        return 1053670  # Default starting ID if no records exist
 
 # Save the last attempted ID
 def save_last_id(current_id):
@@ -89,6 +91,17 @@ def get_attempts():
         all_attempts = Attempt.query.all()
         attempts = [{'username': a.username, 'status': a.status} for a in all_attempts]
     return jsonify(attempts)
+
+@app.route('/current_id', methods=['GET'])
+def get_current_id():
+    return jsonify({'current_id': username})
+
+@app.route('/get_succeeded', methods=['GET'])
+def get_succeeded():
+    with app.app_context():
+        succeeded_attempts = Attempt.query.filter_by(status='Success').all()
+        results = [{'username': a.username} for a in succeeded_attempts]
+    return jsonify(results)
 
 def run_flask_app():
     app.run(host='0.0.0.0', port=10000)
