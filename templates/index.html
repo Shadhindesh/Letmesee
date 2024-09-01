@@ -102,7 +102,7 @@
                         li.classList.add('failed');
                     }
                     li.innerHTML = `<strong>Username:</strong> ${attempt.username} <br> <strong>Status:</strong> ${attempt.status}`;
-                    attemptsList.appendChild(li);
+                    attemptsList.insertBefore(li, attemptsList.firstChild); // Insert at the top
                 }
             });
         }
